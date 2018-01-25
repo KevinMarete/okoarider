@@ -6,10 +6,17 @@ class User_model extends CI_Model {
 	public function create_user($account_data){
 		$response = array();
 		try{
-			$this->db->replace('tbl_profile', $account_data);
+			$uuid = $account_data['uuid'];
+			$result_data = $this->db->get_where('tbl_profile', array('uuid' => $uuid))->row_array();
+			if(!empty($result_data)){
+				$this->db->update('tbl_profile', $account_data, array('uuid' => $uuid));
+				$response['message'] = 'Existing Account has been updated';
+			}else{
+				$this->db->insert('tbl_profile', $account_data);
+				$response['message'] = 'New Account has been created';
+			}
 			$response['status'] = TRUE;
-			$response['message'] = 'New Account has been created';
-			$response['uuid'] = $account_data['uuid'];
+			$response['uuid'] = $uuid;
 		}catch(Execption $e){
 			$response['status'] = FALSE;
 			$response['message'] = $e->getMessage();
@@ -20,9 +27,16 @@ class User_model extends CI_Model {
 	public function create_token($token_data){
 		$response = array();
 		try{
-			$this->db->replace('tbl_token', $token_data);
+			$uuid = $token_data['uuid'];
+			$result_data = $this->db->get_where('tbl_token', array('uuid' => $uuid))->row_array();
+			if(!empty($result_data)){
+				$this->db->update('tbl_token', $token_data, array('uuid' => $uuid));
+				$response['message'] = 'Token was updated';
+			}else{
+				$this->db->insert('tbl_token', $token_data);
+				$response['message'] = 'Token was created';
+			}
 			$response['status'] = TRUE;
-			$response['message'] = 'Token was created';
 		}catch(Execption $e){
 			$response['status'] = FALSE;
 			$response['message'] = $e->getMessage();
@@ -54,9 +68,16 @@ class User_model extends CI_Model {
 	public function create_history($history_data){
 		$response = array();
 		try{
-			$this->db->replace('tbl_history', $history_data);
+			$request_id = $history_data['request_id'];
+			$result_data = $this->db->get_where('tbl_history', array('request_id' => $request_id))->row_array();
+			if(!empty($result_data)){
+				$this->db->update('tbl_history', $history_data, array('request_id' => $request_id));
+				$response['message'] = 'Profile history was updated';
+			}else{
+				$this->db->insert('tbl_history', $history_data);
+				$response['message'] = 'Profile history was added';
+			}
 			$response['status'] = TRUE;
-			$response['message'] = 'Profile history was added';
 		}catch(Execption $e){
 			$response['status'] = FALSE;
 			$response['message'] = $e->getMessage();
