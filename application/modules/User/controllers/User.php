@@ -166,24 +166,43 @@ class User extends MX_Controller
 		);
 		$histories = $this->curl_get($this->config->item('history_url'), $header_data);
 		if(!$histories['error']){
-			//Save histories data
-			foreach ($histories['data']['history'] as $history) {
-				$history_data = array(
-					'status' => $history['status'],
-					'distance' => $history['distance'],
-					'request_time' => $history['request_time'],
-					'start_time' => $history['start_time'],
-					'start_city_name' => $history['start_city']['display_name'],
-					'start_city_latitude' => $history['start_city']['latitude'],
-					'start_city_longitude' => $history['start_city']['longitude'],
-					'end_time' => $history['end_time'],
-					'product_id' => $history['product_id'],
-					'request_id' => $history['request_id'],
-					'uuid' => $this->session->userdata('uuid')
-				);
-				$response = $this->user_model->create_history($history_data);
-				$all_history[] = $history_data;
+			$counter = 0;
+			$total_count = $histories['data']['count'];
+			$batch_count = sizeof($histories['data']['history']);
+
+			while($counter < $total_count){
+				if($counter > 0){
+					//Use offset for history get url
+					$histories = $this->curl_get($this->config->item('history_url').'&offset='.$counter, $header_data);
+				}
+
+				//Save histories data
+				if(!$histories['error']){
+					foreach ($histories['data']['history'] as $history) {
+						$history_data = array(
+							'status' => $history['status'],
+							'distance' => $history['distance'],
+							'request_time' => $history['request_time'],
+							'start_time' => $history['start_time'],
+							'start_city_name' => $history['start_city']['display_name'],
+							'start_city_latitude' => $history['start_city']['latitude'],
+							'start_city_longitude' => $history['start_city']['longitude'],
+							'end_time' => $history['end_time'],
+							'product_id' => $history['product_id'],
+							'request_id' => $history['request_id'],
+							'uuid' => $this->session->userdata('uuid')
+						);
+						$response = $this->user_model->create_history($history_data);
+						$all_history[] = $history_data;
+					}
+				}
+
+				//Increment counter
+				$counter += $batch_count;
 			}
+
+			//Profile user
+
 		}
 		$data['histories'] = $all_history;
 		$data['content_view'] = 'user/history_view';
